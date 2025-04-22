@@ -6,6 +6,7 @@ function Connexion() {
   const [motDePasse, setMotDePasse] = useState('');
   const [message, setMessage] = useState('');
   const [resultats, setResultats] = useState([]);
+  const [moyenne, setMoyenne] = useState(0);
   const [estConnecte, setEstConnecte] = useState(false);
 
   const handleConnexion = async (e) => {
@@ -19,6 +20,11 @@ function Connexion() {
         setResultats(data);
         setMessage('');
         setEstConnecte(true);
+        let total = 0;
+        data.forEach(element => {
+          total += parseFloat(element.note);
+        });
+        setMoyenne(total / data.length);
       } else {
         setMessage("Identifiant ou mot de passe incorrect.");
       }
@@ -31,13 +37,31 @@ function Connexion() {
   if (estConnecte) {
     return (
       <div>
-        <h3>Résultats</h3>
-        {resultats.map((note, index) => (
-          <div key={index}>
-            <p>Note : {note.note}</p>
-            <p>Matière : {note.nom}</p>
-          </div>
-        ))}
+        <table>
+          <caption>
+            Récapitulatif
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Matières</th>
+              <th scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+          {resultats.map((note, index) => (
+          <tr key={index}>
+            <th scope="row">{note.nom}</th>
+            <td>{note.note}</td>
+          </tr>
+          ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Moyenne</th>
+              <td>{moyenne}</td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     );
   }
