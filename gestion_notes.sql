@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 22 avr. 2025 à 11:14
+-- Généré le : mar. 22 avr. 2025 à 11:31
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -38,6 +38,7 @@ CREATE TABLE `matieres` (
 
 INSERT INTO `matieres` (`id`, `nom`) VALUES
 (1, 'Communication web'),
+(2, 'Mathématiques'),
 (3, 'Programmation orientée objet'),
 (4, 'Cybersécurité'),
 (5, 'Design d’interaction'),
@@ -65,21 +66,21 @@ CREATE TABLE `notes` (
 --
 
 INSERT INTO `notes` (`id`, `id_eleve`, `id_prof`, `id_matiere`, `note`) VALUES
-(1, 4, 1, 1, 16.5),
-(2, 5, 1, 1, 14),
-(3, 6, 1, 1, 15.5),
-(4, 7, 1, 1, 17),
-(5, 8, 1, 1, 13.5),
-(10, 4, 3, 6, 11),
-(11, 5, 3, 6, 13),
+(1, 1, 3, 7, 16.5),
+(2, 2, 3, 1, 14),
+(3, 6, 3, 1, 15.5),
+(4, 7, 3, 1, 17),
+(5, 8, 5, 1, 13.5),
+(10, 9, 3, 6, 11),
+(11, 2, 3, 6, 13),
 (12, 6, 3, 6, 14),
 (13, 9, 3, 6, 15.5),
-(14, 9, 1, 4, 16),
-(15, 8, 1, 4, 15),
-(16, 7, 1, 4, 14),
-(17, 4, 2, 3, 12.5),
-(18, 5, 2, 3, 13),
-(19, 6, 2, 3, 15.5);
+(14, 9, 4, 4, 16),
+(15, 8, 4, 4, 15),
+(16, 7, 5, 4, 14),
+(17, 2, 7, 3, 12.5),
+(18, 9, 5, 3, 13),
+(19, 6, 5, 3, 15.5);
 
 -- --------------------------------------------------------
 
@@ -101,15 +102,15 @@ CREATE TABLE `utilisateurs` (
 --
 
 INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `identifiant`, `mot_de_passe`, `role`) VALUES
-(1, 'GARNIER', 'Mathis', 'matgarnier@ensc.fr', 'christophe4ever', 'eleve'),
-(2, 'BENOIS', 'Elian', 'ebenois@ensc.fr', 'ilovekiki', 'eleve'),
-(3, 'PLACIN', 'Frederique', 'freplacin@ensc.fr', 'champi4ever', 'prof'),
-(4, 'VERDIER', 'Julien', 'jverdier@ensc.fr', 'promaster', 'prof'),
-(5, 'DUPONT', 'Claire', 'cdupont@ensc.fr', 'dataqueen', 'prof'),
-(6, 'KABORE', 'Aïcha', 'akabore@ensc.fr', 'securepass123', 'eleve'),
-(7, 'LAMBERT', 'Sophie', 'slambert@ensc.fr', 'soso2025', 'eleve'),
-(8, 'TOUZET', 'Lucas', 'ltouzet@ensc.fr', 'lucasnotes', 'eleve'),
-(9, 'MARTIN', 'Nathan', 'nmartin@ensc.fr', 'nathan456', 'eleve');
+(1, 'GARNIER', 'Mathis', 'matgarnier', 'christophe4ever', 'eleve'),
+(2, 'BENOIS', 'Elian', 'ebenois', 'ilovekiki', 'eleve'),
+(3, 'PLACIN', 'Frederique', 'freplacin', 'champi4ever', 'prof'),
+(4, 'VERDIER', 'Julien', 'jverdier', 'promaster', 'prof'),
+(5, 'DUPONT', 'Claire', 'cdupont', 'dataqueen', 'prof'),
+(6, 'KABORE', 'Aïcha', 'akabore', 'securepass123', 'eleve'),
+(7, 'LAMBERT', 'Sophie', 'slambert', 'soso2025', 'eleve'),
+(8, 'TOUZET', 'Lucas', 'ltouzet', 'lucasnotes', 'eleve'),
+(9, 'MARTIN', 'Nathan', 'nmartin', 'nathan456', 'eleve');
 
 --
 -- Index pour les tables déchargées
