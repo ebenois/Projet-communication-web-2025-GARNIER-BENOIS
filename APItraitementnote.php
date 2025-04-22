@@ -16,7 +16,7 @@ try {
 
 $identifiant = $_GET['identifiant'] ?? '';
 $motDePasse = $_GET['motDePasse'] ?? '';
-$stmt = $bdd->prepare("SELECT * FROM notes WHERE id_eleve = (SELECT id FROM utilisateurs WHERE identifiant = ? AND mot_de_passe = ?)");
+$stmt = $bdd->prepare("SELECT nom,note FROM notes JOIN matieres ON notes.id_matiere = matieres.id WHERE id_eleve = (SELECT id FROM utilisateurs WHERE identifiant = ? AND mot_de_passe = ?)");
 $stmt->execute([$identifiant,$motDePasse]);
 $resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 echo json_encode($resultats);
