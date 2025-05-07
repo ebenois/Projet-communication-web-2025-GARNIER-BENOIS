@@ -83,25 +83,7 @@ function Connexion() {
                   <td>{note.note}</td>
                 </tr>
               ))}
-              <tr>
-                <th scope="row">
-                  <input list="matieres" type="text" required/>
-                  <datalist id="matieres">
-                    <option value="Maths" />
-                    <option value="Physique" />
-                  </datalist>
-                </th>
-                <td>
-                <input list="nom" type="text" required/>
-                  <datalist id="nom">
-                    <option value="GARNIER Mathis" />
-                    <option value="BENOIS Elian" />
-                  </datalist>
-                </td>
-                <td>
-                  <input type="number" min="0" max="20" required/>
-                </td>
-              </tr>
+                <Notes/>
               </tbody>
             </>
           )}
@@ -144,10 +126,124 @@ function Connexion() {
   );
 }
 
+//dump
+let nextId = 0;
+
+function Infos({ id, data, onChange, Supprimer }) {
+  const [modification, setModification] = useState(false);
+  const modifier = () => setModification(!modification);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    onChange(id, { ...data, [name]: name === "note" ? parseFloat(value) || 0 : value });
+  };
+  return (
+    <>
+      <th scope="row">
+        <input
+          list="matiere"
+          type="text"
+          name="matiere"
+          value={data.matiere}
+          onChange={handleChange}
+          disabled={modification}
+        />
+        <datalist id="matiere">
+          <option value="Maths" />
+          <option value="Physique" />
+        </datalist>
+      </th>
+      <td>
+        <input
+            list="eleve"
+            type="text"
+            name="eleve"
+            value={data.eleve}
+            onChange={handleChange}
+            disabled={modification}
+          />
+        <datalist id="eleve">
+          <option value="GARNIER Mathis" />
+          <option value="BENOIS Elian" />
+        </datalist>
+      </td>
+      <td>
+        <input
+          type="number"
+          name="note"
+          value={data.note}
+          onChange={handleChange}
+          disabled={modification}
+          min="0" 
+          max="20"
+        />
+        <button onClick={modifier}>{modification ? 'modifier' : 'enregistrer'}</button>
+        <button onClick={() => Supprimer(id)}>Supprimer</button>
+      </td>
+    </>
+  );
+}
+
+function Notes() {
+  const [liste, setListe] = useState([]);
+  const ajouterProduit = () => {
+    const nouveauProduit = {
+      id: nextId++,
+      nom: '',
+      prix: 0,
+      quantite: 1,
+    };
+    setListe([...liste, nouveauProduit]);
+  };
+  const SupprimerProduit = (idASupprimer) => {
+    setListe(liste.filter((produit) => produit.id !== idASupprimer));
+  };
+  const mettreAJourProduit = (id, nouvelleValeur) => {
+    setListe(liste.map(p => (p.id === id ? nouvelleValeur : p)));
+  };
+
+  const soumission = async (e) => {
+    /*e.preventDefault();
+    const data = {
+      liste: liste,
+    };
+    try {
+    const reponse = await fetch('http://localhost/traitement.php', {
+      mode: 'no-cors',
+      method: "post",
+      headers: {
+           "Content-Type": "application/json"
+      },
+    body: JSON.stringify(data),
+    });
+    console.log(data);
+    const result = await reponse.text();
+    console.log('Réponse du serveur :', result);
+    } catch (erreur) {
+    console.error('Erreur lors de l\'envoi des données :', erreur);
+    }*/
+    };
+
+  return (
+    <>
+        {liste.map((produit) => (
+          <tr key={produit.id}>
+            <Infos
+              id={produit.id}
+              data={produit}
+              onChange={mettreAJourProduit}
+              Supprimer={SupprimerProduit}
+            />
+          </tr>
+        ))}
+      <button onClick={ajouterProduit}>Ajouter une nouvelle note</button>
+      <button onClick={soumission}>Envoyer</button>
+    </>
+  );
+}
+
 function App() {
   return (
     <div>
-      <div className="ENSC-image"></div>
       <div className="container">
         <div className='connexion'>
           <Connexion />
