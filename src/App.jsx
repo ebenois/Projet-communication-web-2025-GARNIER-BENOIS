@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 function Connexion() {
@@ -33,15 +33,41 @@ function Connexion() {
     }
   };
 
+  // Fonction pour mettre à jour une note côté serveur
+  const enregistrerNote = async (idMatiere, idEleve, note) => {
+    try {
+      const res = await fetch("http://localhost/APIupdateNote.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_matiere: idMatiere, id_eleve: idEleve, note: note }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        console.error("Erreur serveur:", data.error);
+      }
+    } catch (err) {
+      console.error("Erreur lors de l'enregistrement:", err);
+    }
+  };
+
+  // Gérer la modification locale des notes
+  const handleModificationNote = (idMatiere, idEleve, nouvelleNote) => {
+    const updatedResults = resultats.map((note) => {
+      if (note.id_matiere === idMatiere && note.id_eleve === idEleve) {
+        return { ...note, note: nouvelleNote };
+      }
+      return note;
+    });
+    setResultats(updatedResults);
+  };
 
   if (estConnecte) {
-    console.log(resultats);
     return (
       <div>
         <table>
-          <caption>
-            Récapitulatif
-          </caption>
+          <caption>Récapitulatif</caption>
+
+          {/* Élève */}
           {resultats.some(r => r.job === "eleve") && (
             <>
               <thead>
@@ -66,24 +92,29 @@ function Connexion() {
               </tfoot>
             </>
           )}
+
+          {/* Professeur */}
           {resultats.some(r => r.job === "prof") && (
             <>
               <thead>
                 <tr>
-                  <th scope="col">Matières</th>
+                  <th scope="col">Matière</th>
                   <th scope="col">Nom</th>
-                  <th scope="col">Notes</th>
+                  <th scope="col">Note</th>
+                  <th scope="col">Action</th>
                 </tr>
               </thead>
               <tbody>
-              {resultats.map((note, index) => (
-                <tr key={index}>
-                  <th scope="row">{note.nom_matiere}</th>
-                  <td>{note.utilisateur_nom} {note.utilisateur_prenom}</td>
-                  <td>{note.note}</td>
-                </tr>
-              ))}
-                <Notes/>
+                {resultats.map((note, index) => (
+                  <LigneNoteProf
+                    key={index}
+                    noteData={note}
+                    onUpdate={(newNote) => {
+                      handleModificationNote(note.id_matiere, note.id_eleve, newNote);
+                      enregistrerNote(note.id_matiere, note.id_eleve, newNote);
+                    }}
+                  />
+                ))}
               </tbody>
             </>
           )}
@@ -92,7 +123,7 @@ function Connexion() {
     );
   }
 
-  // Sinon, afficher le formulaire
+  // Formulaire de connexion
   return (
     <div>
       <h3 style={{ textAlign: "center" }}>Connexion</h3>
@@ -126,124 +157,43 @@ function Connexion() {
   );
 }
 
-//dump
-let nextId = 0;
+function LigneNoteProf({ noteData, onUpdate }) {
+  const [modification, setModification] = useState(true);
+  const [note, setNote] = useState(noteData.note);
 
-function Infos({ id, data, onChange, Supprimer }) {
-  const [modification, setModification] = useState(false);
-  const modifier = () => setModification(!modification);
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    onChange(id, { ...data, [name]: name === "note" ? parseFloat(value) || 0 : value });
+  const handleToggle = () => {
+    if (!modification) {
+      onUpdate(note);
+    }
+    setModification(!modification);
   };
+
   return (
-    <>
-      <th scope="row">
-        <input
-          list="matiere"
-          type="text"
-          name="matiere"
-          value={data.matiere}
-          onChange={handleChange}
-          disabled={modification}
-        />
-        <datalist id="matiere">
-          <option value="Maths" />
-          <option value="Physique" />
-        </datalist>
-      </th>
-      <td>
-        <input
-            list="eleve"
-            type="text"
-            name="eleve"
-            value={data.eleve}
-            onChange={handleChange}
-            disabled={modification}
-          />
-        <datalist id="eleve">
-          <option value="GARNIER Mathis" />
-          <option value="BENOIS Elian" />
-        </datalist>
-      </td>
+    <tr>
+      <td>{noteData.nom_matiere}</td>
+      <td>{noteData.utilisateur_nom} {noteData.utilisateur_prenom}</td>
       <td>
         <input
           type="number"
-          name="note"
-          value={data.note}
-          onChange={handleChange}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
           disabled={modification}
-          min="0" 
-          max="20"
+          style={{ width: "60px" }}
         />
-        <button onClick={modifier}>{modification ? 'modifier' : 'enregistrer'}</button>
-        <button onClick={() => Supprimer(id)}>Supprimer</button>
       </td>
-    </>
-  );
-}
-
-function Notes() {
-  const [liste, setListe] = useState([]);
-  const ajouterProduit = () => {
-    const nouveauProduit = {
-      id: nextId++,
-      nom: '',
-      prix: 0,
-      quantite: 1,
-    };
-    setListe([...liste, nouveauProduit]);
-  };
-  const SupprimerProduit = (idASupprimer) => {
-    setListe(liste.filter((produit) => produit.id !== idASupprimer));
-  };
-  const mettreAJourProduit = (id, nouvelleValeur) => {
-    setListe(liste.map(p => (p.id === id ? nouvelleValeur : p)));
-  };
-
-  const soumission = async (e) => {
-    /*e.preventDefault();
-    const data = {
-      liste: liste,
-    };
-    try {
-    const reponse = await fetch('http://localhost/traitement.php', {
-      mode: 'no-cors',
-      method: "post",
-      headers: {
-           "Content-Type": "application/json"
-      },
-    body: JSON.stringify(data),
-    });
-    console.log(data);
-    const result = await reponse.text();
-    console.log('Réponse du serveur :', result);
-    } catch (erreur) {
-    console.error('Erreur lors de l\'envoi des données :', erreur);
-    }*/
-    };
-
-  return (
-    <>
-        {liste.map((produit) => (
-          <tr key={produit.id}>
-            <Infos
-              id={produit.id}
-              data={produit}
-              onChange={mettreAJourProduit}
-              Supprimer={SupprimerProduit}
-            />
-          </tr>
-        ))}
-      <button onClick={ajouterProduit}>Ajouter une nouvelle note</button>
-      <button onClick={soumission}>Envoyer</button>
-    </>
+      <td>
+        <button onClick={handleToggle}>
+          {modification ? "Modifier" : "Enregistrer"}
+        </button>
+      </td>
+    </tr>
   );
 }
 
 function App() {
   return (
     <div>
+      <div className="ENSC-image"></div>
       <div className="container">
         <div className='connexion'>
           <Connexion />
