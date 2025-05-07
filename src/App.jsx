@@ -35,6 +35,7 @@ function Connexion() {
 
 
   if (estConnecte) {
+    console.log(resultats);
     return (
       <div>
         <table>
@@ -47,14 +48,29 @@ function Connexion() {
               <th scope="col">Notes</th>
             </tr>
           </thead>
-          <tbody>
-          {resultats.map((note, index) => (
-          <tr key={index}>
-            <th scope="row">{note.nom}</th>
-            <td>{note.note}</td>
-          </tr>
-          ))}
-          </tbody>
+          {resultats.map((note, index) => {
+            if (note.job =="eleve")
+          return(
+            <tbody>
+              <tr key={index}>
+                <th scope="row">{note.nom_matiere}</th>
+                <td>{note.note}</td>
+              </tr>
+            </tbody>
+          )
+          else
+          return(
+            <tbody>
+              <tr key={index}>
+                <th scope="row">{note.nom_matiere}</th>
+                <td>{note.note}</td>
+              </tr>
+              <tr>
+                <th scope="row">{note.nom_matiere}</th>
+                <td>{note.note}</td>
+              </tr>
+            </tbody>
+          )})}
           <tfoot>
             <tr>
               <th scope="row">Moyenne</th>
