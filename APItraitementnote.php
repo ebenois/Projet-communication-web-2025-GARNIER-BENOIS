@@ -16,7 +16,7 @@ try {
 
 $identifiant = $_GET['identifiant'] ?? '';
 $motDePasse = $_GET['motDePasse'] ?? '';
-$stmt = $bdd->prepare("SELECT u.id AS utilisateur_id,u.job,m.nom AS nom_matiere,n.note FROM notes n JOIN matieres m ON n.id_matiere = m.id JOIN utilisateurs u ON u.id = n.id_eleve or u.id = n.id_prof WHERE u.identifiant = ? AND u.mot_de_passe = ?");
+$stmt = $bdd->prepare("SELECT u.id AS utilisateur_id, CASE WHEN u.job = 'eleve' THEN (SELECT nom FROM utilisateurs WHERE id = n.id_prof) WHEN u.job = 'prof' THEN (SELECT nom FROM utilisateurs WHERE id = n.id_eleve) END AS utilisateur_nom, CASE WHEN u.job = 'eleve' THEN (SELECT prenom FROM utilisateurs WHERE id = n.id_prof) WHEN u.job = 'prof' THEN (SELECT prenom FROM utilisateurs WHERE id = n.id_eleve) END AS utilisateur_prenom, u.job, m.nom AS nom_matiere, n.note FROM notes n JOIN matieres m ON n.id_matiere = m.id JOIN utilisateurs u ON u.id = n.id_eleve OR u.id = n.id_prof WHERE u.identifiant = ? AND u.mot_de_passe = ?");
 $stmt->execute([$identifiant,$motDePasse]);
 $resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 echo json_encode($resultats);

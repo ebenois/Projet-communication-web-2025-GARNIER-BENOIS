@@ -24,7 +24,7 @@ function Connexion() {
         data.forEach(element => {
           total += parseFloat(element.note);
         });
-        setMoyenne(total / data.length);
+        setMoyenne((total / data.length).toFixed(2));
       } else {
         setMessage("Identifiant ou mot de passe incorrect.");
       }
@@ -42,41 +42,69 @@ function Connexion() {
           <caption>
             Récapitulatif
           </caption>
-          <thead>
-            <tr>
-              <th scope="col">Matières</th>
-              <th scope="col">Notes</th>
-            </tr>
-          </thead>
-          {resultats.map((note, index) => {
-            if (note.job =="eleve")
-          return(
-            <tbody>
-              <tr key={index}>
-                <th scope="row">{note.nom_matiere}</th>
-                <td>{note.note}</td>
-              </tr>
-            </tbody>
-          )
-          else
-          return(
-            <tbody>
-              <tr key={index}>
-                <th scope="row">{note.nom_matiere}</th>
-                <td>{note.note}</td>
-              </tr>
+          {resultats.some(r => r.job === "eleve") && (
+            <>
+              <thead>
+                <tr>
+                  <th scope="col">Matières</th>
+                  <th scope="col">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resultats.map((note, index) => (
+                  <tr key={index}>
+                    <th scope="row">{note.nom_matiere}</th>
+                    <td>{note.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">Moyenne</th>
+                  <td>{moyenne}</td>
+                </tr>
+              </tfoot>
+            </>
+          )}
+          {resultats.some(r => r.job === "prof") && (
+            <>
+              <thead>
+                <tr>
+                  <th scope="col">Matières</th>
+                  <th scope="col">Nom</th>
+                  <th scope="col">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+              {resultats.map((note, index) => (
+                <tr key={index}>
+                  <th scope="row">{note.nom_matiere}</th>
+                  <td>{note.utilisateur_nom} {note.utilisateur_prenom}</td>
+                  <td>{note.note}</td>
+                </tr>
+              ))}
               <tr>
-                <th scope="row">{note.nom_matiere}</th>
-                <td>{note.note}</td>
+                <th scope="row">
+                  <input list="matieres" type="text" required/>
+                  <datalist id="matieres">
+                    <option value="Maths" />
+                    <option value="Physique" />
+                  </datalist>
+                </th>
+                <td>
+                <input list="nom" type="text" required/>
+                  <datalist id="nom">
+                    <option value="GARNIER Mathis" />
+                    <option value="BENOIS Elian" />
+                  </datalist>
+                </td>
+                <td>
+                  <input type="number" min="0" max="20" required/>
+                </td>
               </tr>
-            </tbody>
-          )})}
-          <tfoot>
-            <tr>
-              <th scope="row">Moyenne</th>
-              <td>{moyenne}</td>
-            </tr>
-          </tfoot>
+              </tbody>
+            </>
+          )}
         </table>
       </div>
     );
