@@ -35,59 +35,55 @@ function Connexion() {
 
 
   if (estConnecte) {
-    console.log(resultats);
     return (
-      <div>
-        <table>
-          <caption>
-            Récapitulatif
-          </caption>
-          {resultats.some(r => r.job === "eleve") && (
-            <>
-              <thead>
-                <tr>
-                  <th scope="col">Matières</th>
-                  <th scope="col">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
+      <div class="text-gray-900 bg-gray-200">
+        <div class="p-4 flex">
+          <h1 class="text-3xl">Récapitulatif</h1>
+        </div>
+        <div class="px-3 py-4 flex justify-center">
+          <table class="w-full text-md bg-white shadow-md rounded mb-4">
+            {resultats.some(r => r.job === "eleve") && (
+              <>
+                <tbody>
+                  <tr class="border-b">
+                    <th class="text-left p-3 px-5">Matières</th>
+                    <th class="text-left p-3 px-5">Notes</th>
+                  </tr>
+                  {resultats.map((note, index) => (
+                    <tr class="border-b hover:bg-orange-100 bg-gray-100" key={index}>
+                      <td class="p-3 px-5">{note.nom_matiere}</td>
+                      <td class="p-3 px-5">{note.note}</td>
+                    </tr>
+                  ))}
+                  <tr class="border-b hover:bg-orange-100 bg-gray-100">
+                    <td class="p-3 px-5">Moyenne</td>
+                    <td class="p-3 px-5">{moyenne}</td>
+                  </tr>
+                </tbody>
+              </>
+            )}
+            {resultats.some(r => r.job === "prof") && (
+              <>
+                <tbody>
+                  <tr class="border-b">
+                    <th class="text-left p-3 px-5">Matières</th>
+                    <th class="text-left p-3 px-5">Nom</th>
+                    <th class="text-left p-3 px-5">Notes</th>
+                    <th></th>
+                  </tr>
                 {resultats.map((note, index) => (
-                  <tr key={index}>
-                    <th scope="row">{note.nom_matiere}</th>
-                    <td>{note.note}</td>
+                  <tr class="border-b hover:bg-orange-100 bg-gray-100" key={index}>
+                    <td class="p-3 px-5">{note.nom_matiere}</td>
+                    <td class="p-3 px-5">{note.utilisateur_nom} {note.utilisateur_prenom}</td>
+                    <td class="p-3 px-5">{note.note}</td>
                   </tr>
                 ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th scope="row">Moyenne</th>
-                  <td>{moyenne}</td>
-                </tr>
-              </tfoot>
-            </>
-          )}
-          {resultats.some(r => r.job === "prof") && (
-            <>
-              <thead>
-                <tr>
-                  <th scope="col">Matières</th>
-                  <th scope="col">Nom</th>
-                  <th scope="col">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-              {resultats.map((note, index) => (
-                <tr key={index}>
-                  <th scope="row">{note.nom_matiere}</th>
-                  <td>{note.utilisateur_nom} {note.utilisateur_prenom}</td>
-                  <td>{note.note}</td>
-                </tr>
-              ))}
-                <Notes/>
-              </tbody>
-            </>
-          )}
-        </table>
+                  <Notes/>
+                </tbody>
+              </>
+            )}
+          </table>
+        </div>
       </div>
     );
   }
@@ -137,7 +133,7 @@ function Infos({ id, data, onChange, Supprimer }) {
   };
   return (
     <>
-      <th scope="row">
+      <td class="p-3 px-5">
         <input
           list="matiere"
           type="text"
@@ -150,8 +146,8 @@ function Infos({ id, data, onChange, Supprimer }) {
           <option value="Maths" />
           <option value="Physique" />
         </datalist>
-      </th>
-      <td>
+      </td>
+      <td class="p-3 px-5">
         <input
             list="eleve"
             type="text"
@@ -165,7 +161,7 @@ function Infos({ id, data, onChange, Supprimer }) {
           <option value="BENOIS Elian" />
         </datalist>
       </td>
-      <td>
+      <td class="p-3 px-5">
         <input
           type="number"
           name="note"
@@ -175,8 +171,10 @@ function Infos({ id, data, onChange, Supprimer }) {
           min="0" 
           max="20"
         />
-        <button onClick={modifier}>{modification ? 'modifier' : 'enregistrer'}</button>
-        <button onClick={() => Supprimer(id)}>Supprimer</button>
+      </td>
+      <td class="p-3 px-5 flex justify-end">
+        <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={modifier}>{modification ? 'modifier' : 'enregistrer'}</button>
+        <button class="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => Supprimer(id)}>Supprimer</button>
       </td>
     </>
   );
@@ -225,7 +223,7 @@ function Notes() {
   return (
     <>
         {liste.map((produit) => (
-          <tr key={produit.id}>
+          <tr class="border-b hover:bg-orange-100 bg-gray-100" key={produit.id}>
             <Infos
               id={produit.id}
               data={produit}
