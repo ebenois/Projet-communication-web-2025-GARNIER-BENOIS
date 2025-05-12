@@ -93,14 +93,14 @@ CREATE TABLE `utilisateurs` (
   `prenom` varchar(100) DEFAULT NULL,
   `identifiant` varchar(100) DEFAULT NULL,
   `mot_de_passe` varchar(255) DEFAULT NULL,
-  `role` enum('eleve','prof') NOT NULL
+  `job` enum('eleve','prof') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `utilisateurs`
 --
 
-INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `identifiant`, `mot_de_passe`, `role`) VALUES
+INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `identifiant`, `mot_de_passe`, `job`) VALUES
 (1, 'GARNIER', 'Mathis', 'matgarnier@ensc.fr', 'christophe4ever', 'eleve'),
 (2, 'BENOIS', 'Elian', 'ebenois@ensc.fr', 'ilovekiki', 'eleve'),
 (3, 'PLACIN', 'Frederique', 'freplacin@ensc.fr', 'champi4ever', 'prof'),
