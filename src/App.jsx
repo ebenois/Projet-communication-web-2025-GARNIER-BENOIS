@@ -41,9 +41,9 @@ function Connexion() {
           <h1 class="text-3xl">Récapitulatif</h1>
         </div>
         <div class="px-3 py-4 flex justify-center">
-          <table class="w-full text-md bg-white shadow-md rounded mb-4">
+          
             {resultats.some(r => r.job === "eleve") && (
-              <>
+              <table class="w-full text-md bg-white shadow-md rounded mb-4">
                 <tbody>
                   <tr class="border-b">
                     <th class="text-left p-3 px-5">Matières</th>
@@ -60,10 +60,10 @@ function Connexion() {
                     <td class="p-3 px-5">{moyenne}</td>
                   </tr>
                 </tbody>
-              </>
+              </table>
             )}
             {resultats.some(r => r.job === "prof") && (
-              <>
+              <table class="w-full text-md bg-white shadow-md rounded mb-4">
                 <tbody>
                   <tr class="border-b">
                     <th class="text-left p-3 px-5">Matières</th>
@@ -80,9 +80,8 @@ function Connexion() {
                 ))}
                   <Notes/>
                 </tbody>
-              </>
+              </table>
             )}
-          </table>
         </div>
       </div>
     );
@@ -232,8 +231,8 @@ function Notes() {
             />
           </tr>
         ))}
-      <button onClick={ajouterProduit}>Ajouter une nouvelle note</button>
-      <button onClick={soumission}>Envoyer</button>
+      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ajouterProduit}>Ajouter une nouvelle note</button>
+      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={soumission}>Envoyer</button>
     </>
   );
 }
