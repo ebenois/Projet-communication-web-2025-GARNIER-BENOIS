@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 function Connexion() {
@@ -33,13 +33,15 @@ function Connexion() {
   };
 
   if (estConnecte) {
+    const estProf = resultats.some(r => r.job === "prof");
+
     return (
       <div className="text-gray-900 bg-gray-200">
         <div className="p-4 flex">
           <h1 className="text-3xl">Récapitulatif</h1>
         </div>
         <div className="px-3 py-4">
-          {resultats.some(r => r.job === "eleve") && (
+          {!estProf && (
             <table className="w-full text-md bg-white shadow-md rounded mb-4">
               <tbody>
                 <tr className="border-b">
@@ -59,9 +61,7 @@ function Connexion() {
               </tbody>
             </table>
           )}
-          {resultats.some(r => r.job === "prof") && (
-            <Recapitulatif />
-          )}
+          {estProf && <Recapitulatif notesInitiales={resultats.filter(r => r.job === "eleve")} />}
         </div>
       </div>
     );
@@ -99,9 +99,17 @@ function Connexion() {
   );
 }
 
-function Recapitulatif() {
+function Recapitulatif({ notesInitiales }) {
   const [recap, setRecap] = useState([]);
   const nextId = useRef(0);
+
+  useEffect(() => {
+    const notesAvecIds = notesInitiales.map(note => ({
+      ...note,
+      id: nextId.current++,
+    }));
+    setRecap(notesAvecIds);
+  }, [notesInitiales]);
 
   const ajouterNote = () => {
     const nouvelleNote = {
@@ -121,26 +129,27 @@ function Recapitulatif() {
     setRecap(recap.map(p => (p.id === id ? nouvelleValeur : p)));
   };
 
-  const soumission = async (e) => {
-    /*e.preventDefault();
+  const soumission = async () => {
     const data = {
-      liste: liste,
+      notes: recap,
     };
+
     try {
-    const reponse = await fetch('http://localhost/traitement.php', {
-      mode: 'no-cors',
-      method: "post",
-      headers: {
-           "Content-Type": "application/json"
-      },
-    body: JSON.stringify(data),
-    });
-    console.log(data);
-    const result = await reponse.text();
-    console.log('Réponse du serveur :', result);
+      const reponse = await fetch('https://ebenois.zzz.bordeaux-inp.fr/APIenregistrementnote.php', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await reponse.text();
+      console.log('Réponse du serveur :', result);
+      alert('Notes envoyées avec succès !');
     } catch (erreur) {
-    console.error('Erreur lors de l\'envoi des données :', erreur);
-    }*/
+      console.error('Erreur lors de l\'envoi des données :', erreur);
+      alert('Erreur lors de l\'envoi des données');
+    }
   };
 
   return (
@@ -167,7 +176,7 @@ function Recapitulatif() {
       </table>
       <div className="flex">
         <button className="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded" type="button" onClick={ajouterNote}>Ajouter une nouvelle note</button>
-        <button className="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded" type="button" onClick={soumission}>Envoyer</button>
+        <button className="mr-3 text-sm bg-green-600 hover:bg-green-800 text-white py-1 px-2 rounded" type="button" onClick={soumission}>Envoyer</button>
       </div>
     </>
   );
@@ -175,6 +184,7 @@ function Recapitulatif() {
 
 function Note({ id, data, onChange, Supprimer }) {
   const [modification, setModification] = useState(false);
+
   const toggleModification = () => setModification(!modification);
 
   const handleChange = (e) => {
@@ -234,9 +244,7 @@ function Note({ id, data, onChange, Supprimer }) {
 }
 
 function App() {
-  return (
-    <Connexion />
-  );
+  return <Connexion />;
 }
 
 export default App;
