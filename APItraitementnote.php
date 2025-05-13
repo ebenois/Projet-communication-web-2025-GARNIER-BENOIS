@@ -4,9 +4,9 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: POST, GET");
 header('Content-Type: application/json');
 $host = 'localhost';
-$dbname = 'gestion_notes';
-$username = 'root';
-$password = '';
+$dbname = 'ebenois';
+$username = 'ebenois';
+$password = 'Paozie73';
 
 try {
     $bdd = new PDO('mysql:host='.$host.';dbname='.$dbname.';charset=utf8', $username, $password);
