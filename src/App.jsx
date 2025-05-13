@@ -103,23 +103,23 @@ function Connexion() {
   );
 }
 
-//A terminer
+
 function Recapitulatif() {
   const [recap, setRecap] = useState([]);
   const ajouterNote = () => {
     const nouvelleNote = {
       id: nextId++,
-      nom: '',
-      prix: 0,
-      quantite: 1,
+      matiere: '',
+      eleve: '',
+      note: 0,
     };
-    setListe([...liste, nouveauProduit]);
+    setRecap([...recap, nouvelleNote]);
   };
-  const SupprimerProduit = (idASupprimer) => {
-    setListe(liste.filter((produit) => produit.id !== idASupprimer));
+  const SupprimerNote = (idASupprimer) => {
+    setRecap(recap.filter((note) => note.id !== idASupprimer));
   };
-  const mettreAJourProduit = (id, nouvelleValeur) => {
-    setListe(liste.map(p => (p.id === id ? nouvelleValeur : p)));
+  const mettreAJourNote = (id, nouvelleValeur) => {
+    setRecap(recap.map(p => (p.id === id ? nouvelleValeur : p)));
   };
 
   const soumission = async (e) => {
@@ -154,20 +154,20 @@ function Recapitulatif() {
             <th class="text-left p-3 px-5">Notes</th>
             <th></th>
           </tr>
-          {liste.map((produit) => (
-            <tr class="border-b hover:bg-orange-100 bg-gray-100" key={produit.id}>
+          {recap.map((note) => (
+            <tr class="border-b hover:bg-orange-100 bg-gray-100" key={note.id}>
               <Note
-                id={produit.id}
-                data={produit}
-                onChange={mettreAJourProduit}
-                Supprimer={SupprimerProduit}
+                id={note.id}
+                data={note}
+                onChange={mettreAJourNote}
+                Supprimer={SupprimerNote}
               />
             </tr>
           ))}
       </tbody>
     </table>
     <div class="flex">
-      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ajouterProduit}>Ajouter une nouvelle note</button>
+      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ajouterNote}>Ajouter une nouvelle note</button>
       <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={soumission}>Envoyer</button>
     </div>
   </>
@@ -175,7 +175,7 @@ function Recapitulatif() {
 }
 
 //dump
-let nextId = 0;
+const nextId = useRef(0);
 
 function Note({ id, data, onChange, Supprimer }) {
   const [modification, setModification] = useState(false);
