@@ -13,7 +13,7 @@ function Connexion() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://localhost/APItraitementnote.php?identifiant=${identifiant}&motDePasse=${motDePasse}`);
+      const response = await fetch(`https://ebenois.zzz.bordeaux-inp.fr/APItraitementnote.php?identifiant=${identifiant}&motDePasse=${motDePasse}`);
       const data = await response.json();
 
       if (data.length > 0) {
@@ -40,7 +40,7 @@ function Connexion() {
         <div class="p-4 flex">
           <h1 class="text-3xl">Récapitulatif</h1>
         </div>
-        <div class="px-3 py-4 flex justify-center">
+        <div class="px-3 py-4">
           
             {resultats.some(r => r.job === "eleve") && (
               <table class="w-full text-md bg-white shadow-md rounded mb-4">
@@ -56,31 +56,14 @@ function Connexion() {
                     </tr>
                   ))}
                   <tr class="border-b hover:bg-orange-100 bg-gray-100">
-                    <td class="p-3 px-5">Moyenne</td>
-                    <td class="p-3 px-5">{moyenne}</td>
+                    <td class="p-3 px-5 "><b>Moyenne</b></td>
+                    <td class="p-3 px-5"><b>{moyenne}</b></td>
                   </tr>
                 </tbody>
               </table>
             )}
             {resultats.some(r => r.job === "prof") && (
-              <table class="w-full text-md bg-white shadow-md rounded mb-4">
-                <tbody>
-                  <tr class="border-b">
-                    <th class="text-left p-3 px-5">Matières</th>
-                    <th class="text-left p-3 px-5">Nom</th>
-                    <th class="text-left p-3 px-5">Notes</th>
-                    <th></th>
-                  </tr>
-                {resultats.map((note, index) => (
-                  <tr class="border-b hover:bg-orange-100 bg-gray-100" key={index}>
-                    <td class="p-3 px-5">{note.nom_matiere}</td>
-                    <td class="p-3 px-5">{note.utilisateur_nom} {note.utilisateur_prenom}</td>
-                    <td class="p-3 px-5">{note.note}</td>
-                  </tr>
-                ))}
-                  <Notes/>
-                </tbody>
-              </table>
+              <Recapitulatif/>
             )}
         </div>
       </div>
@@ -120,10 +103,81 @@ function Connexion() {
   );
 }
 
+//A terminer
+function Recapitulatif() {
+  const [recap, setRecap] = useState([]);
+  const ajouterNote = () => {
+    const nouvelleNote = {
+      id: nextId++,
+      nom: '',
+      prix: 0,
+      quantite: 1,
+    };
+    setListe([...liste, nouveauProduit]);
+  };
+  const SupprimerProduit = (idASupprimer) => {
+    setListe(liste.filter((produit) => produit.id !== idASupprimer));
+  };
+  const mettreAJourProduit = (id, nouvelleValeur) => {
+    setListe(liste.map(p => (p.id === id ? nouvelleValeur : p)));
+  };
+
+  const soumission = async (e) => {
+    /*e.preventDefault();
+    const data = {
+      liste: liste,
+    };
+    try {
+    const reponse = await fetch('http://localhost/traitement.php', {
+      mode: 'no-cors',
+      method: "post",
+      headers: {
+           "Content-Type": "application/json"
+      },
+    body: JSON.stringify(data),
+    });
+    console.log(data);
+    const result = await reponse.text();
+    console.log('Réponse du serveur :', result);
+    } catch (erreur) {
+    console.error('Erreur lors de l\'envoi des données :', erreur);
+    }*/
+    };
+
+  return (
+    <>
+      <table class="w-full text-md bg-white shadow-md rounded mb-4">
+        <tbody>
+          <tr class="border-b">
+            <th class="text-left p-3 px-5">Matières</th>
+            <th class="text-left p-3 px-5">Nom</th>
+            <th class="text-left p-3 px-5">Notes</th>
+            <th></th>
+          </tr>
+          {liste.map((produit) => (
+            <tr class="border-b hover:bg-orange-100 bg-gray-100" key={produit.id}>
+              <Note
+                id={produit.id}
+                data={produit}
+                onChange={mettreAJourProduit}
+                Supprimer={SupprimerProduit}
+              />
+            </tr>
+          ))}
+      </tbody>
+    </table>
+    <div class="flex">
+      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ajouterProduit}>Ajouter une nouvelle note</button>
+      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={soumission}>Envoyer</button>
+    </div>
+  </>
+  );
+}
+
 //dump
 let nextId = 0;
 
-function Infos({ id, data, onChange, Supprimer }) {
+function Note({ id, data, onChange, Supprimer }) {
   const [modification, setModification] = useState(false);
   const modifier = () => setModification(!modification);
   const handleChange = (e) => {
@@ -175,64 +229,6 @@ function Infos({ id, data, onChange, Supprimer }) {
         <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={modifier}>{modification ? 'modifier' : 'enregistrer'}</button>
         <button class="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => Supprimer(id)}>Supprimer</button>
       </td>
-    </>
-  );
-}
-
-function Notes() {
-  const [liste, setListe] = useState([]);
-  const ajouterProduit = () => {
-    const nouveauProduit = {
-      id: nextId++,
-      nom: '',
-      prix: 0,
-      quantite: 1,
-    };
-    setListe([...liste, nouveauProduit]);
-  };
-  const SupprimerProduit = (idASupprimer) => {
-    setListe(liste.filter((produit) => produit.id !== idASupprimer));
-  };
-  const mettreAJourProduit = (id, nouvelleValeur) => {
-    setListe(liste.map(p => (p.id === id ? nouvelleValeur : p)));
-  };
-
-  const soumission = async (e) => {
-    /*e.preventDefault();
-    const data = {
-      liste: liste,
-    };
-    try {
-    const reponse = await fetch('http://localhost/traitement.php', {
-      mode: 'no-cors',
-      method: "post",
-      headers: {
-           "Content-Type": "application/json"
-      },
-    body: JSON.stringify(data),
-    });
-    console.log(data);
-    const result = await reponse.text();
-    console.log('Réponse du serveur :', result);
-    } catch (erreur) {
-    console.error('Erreur lors de l\'envoi des données :', erreur);
-    }*/
-    };
-
-  return (
-    <>
-        {liste.map((produit) => (
-          <tr class="border-b hover:bg-orange-100 bg-gray-100" key={produit.id}>
-            <Infos
-              id={produit.id}
-              data={produit}
-              onChange={mettreAJourProduit}
-              Supprimer={SupprimerProduit}
-            />
-          </tr>
-        ))}
-      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ajouterProduit}>Ajouter une nouvelle note</button>
-      <button class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={soumission}>Envoyer</button>
     </>
   );
 }
