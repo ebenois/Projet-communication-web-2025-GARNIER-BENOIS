@@ -103,7 +103,7 @@ CREATE TABLE `utilisateurs` (
 INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `identifiant`, `mot_de_passe`, `job`) VALUES
 (1, 'GARNIER', 'Mathis', 'matgarnier@ensc.fr', 'christophe4ever', 'eleve'),
 (2, 'BENOIS', 'Elian', 'ebenois@ensc.fr', 'ilovekiki', 'eleve'),
-(3, 'PLACIN', 'Frederique', 'freplacin@ensc.fr', 'champi4ever', 'prof'),
+(3, 'PLACIN', 'Frederic', 'freplacin@ensc.fr', 'champi4ever', 'prof'),
 (4, 'VERDIER', 'Julien', 'jverdier@ensc.fr', 'promaster', 'prof'),
 (5, 'DUPONT', 'Claire', 'cdupont@ensc.fr', 'dataqueen', 'prof'),
 (6, 'KABORE', 'Aïcha', 'akabore@ensc.fr', 'securepass123', 'eleve'),
