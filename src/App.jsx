@@ -14,9 +14,13 @@ function Connexion() {
 
     try {
       const response = await fetch(`https://ebenois.zzz.bordeaux-inp.fr/APItraitementnote.php?identifiant=${encodeURIComponent(identifiant)}&motDePasse=${encodeURIComponent(motDePasse)}`);
-      const data = await response.json();
+      const dataRaw = await response.json();
 
-      if (data.length > 0) {
+      if (dataRaw.length > 0) {
+        const data = dataRaw.map(({ utilisateur_nom, utilisateur_prenom, ...rest }) => ({
+          ...rest,
+          nom_eleve: `${utilisateur_nom || ''} ${utilisateur_prenom || ''}`.trim()
+        }));
         setResultats(data);
         setMessage('');
         setEstConnecte(true);
@@ -61,7 +65,7 @@ function Connexion() {
               </tbody>
             </table>
           )}
-          {estProf && <Recapitulatif notesInitiales={resultats.filter(r => r.job === "eleve")} />}
+          {estProf && <Recapitulatif notesInitiales={resultats.filter(r => r.job === "prof")} />}
         </div>
       </div>
     );
@@ -102,39 +106,75 @@ function Connexion() {
 function Recapitulatif({ notesInitiales }) {
   const [recap, setRecap] = useState([]);
   const nextId = useRef(0);
+  const profId = notesInitiales[0]?.utilisateur_id || 0;
 
   useEffect(() => {
     const notesAvecIds = notesInitiales.map(note => ({
       ...note,
-      id: nextId.current++,
+      id: note.id || `${note.utilisateur_id}${nextId.current++}`,  // Combine utilisateur_id du prof avec nextId
     }));
     setRecap(notesAvecIds);
   }, [notesInitiales]);
 
   const ajouterNote = () => {
     const nouvelleNote = {
-      id: nextId.current++,
+      id: `${profId}${nextId.current++}`,  // Convertir profId en chaîne
       nom_matiere: '',
       nom_eleve: '',
       note: 0,
+      utilisateur_id: profId,
+      estValide: true,
     };
     setRecap([...recap, nouvelleNote]);
+    console.log(nouvelleNote)
   };
 
-  const SupprimerNote = (idASupprimer) => {
-    setRecap(recap.filter((note) => note.id !== idASupprimer));
-  };
+  const SupprimerNote = async (idASupprimer) => {
+    console.log("Suppression de l'ID :", idASupprimer);
+    try {
+      // Supprimer localement
+      setRecap(recap.filter((note) => note.id !== idASupprimer));
+  
+      // Ne pas appeler l’API pour des notes locales (non encore enregistrées)
+      if (isNaN(idASupprimer)) {
+        return; // Note non enregistrée en base, donc rien à supprimer côté serveur
+      }
+  
+      const response = await fetch('https://ebenois.zzz.bordeaux-inp.fr/APIenregistrementnote.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ supprimer_notes: [parseInt(idASupprimer)] })
+      });
+  
+      const result = await response.json();
+      if (result.error) {
+        alert('Erreur lors de la suppression de la note.');
+      } else {
+        alert('Note supprimée avec succès!');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la note:', error);
+      alert('Erreur lors de la suppression de la note.');
+    }
+  };  
 
   const mettreAJourNote = (id, nouvelleValeur) => {
-    setRecap(recap.map(p => (p.id === id ? nouvelleValeur : p)));
+    setRecap(recap.map(p => (p.id === id ? nouvelleValeur : p)));  // Mise à jour de l'état des notes
   };
 
   const soumission = async () => {
-    const data = {
-      notes: recap,
-    };
+    const notesFormatees = recap.map(note => ({
+      id: note.id,
+      nom_matiere: note.nom_matiere,
+      nom_eleve: note.nom_eleve,
+      note: note.note,
+      utilisateur_id: note.utilisateur_id
+    }));
+    
+    const data = { notes: notesFormatees };
 
     try {
+      console.log(data);
       const reponse = await fetch('https://ebenois.zzz.bordeaux-inp.fr/APIenregistrementnote.php', {
         method: "POST",
         headers: {
@@ -176,20 +216,35 @@ function Recapitulatif({ notesInitiales }) {
       </table>
       <div className="flex">
         <button className="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded" type="button" onClick={ajouterNote}>Ajouter une nouvelle note</button>
-        <button className="mr-3 text-sm bg-green-600 hover:bg-green-800 text-white py-1 px-2 rounded" type="button" onClick={soumission}>Envoyer</button>
+        <button className={`mr-3 text-sm bg-green-600 hover:bg-green-800 text-white py-1 px-2 rounded`}
+          type="button"
+          onClick={soumission}
+        >Envoyer</button>
       </div>
     </>
   );
 }
 
 function Note({ id, data, onChange, Supprimer }) {
-  const [modification, setModification] = useState(false);
+  const [matieres, setMatieres] = useState([]); // Liste des matières
+  const [eleves, setEleves] = useState([]); // Liste des élèves
 
-  const toggleModification = () => setModification(!modification);
+  // Récupérer les matières et les élèves depuis l'API
+  useEffect(() => {
+    fetch('https://ebenois.zzz.bordeaux-inp.fr/APIrecuperationListes.php')
+      .then(res => res.json())
+      .then(data => {
+        setMatieres(data.matieres || []);
+        setEleves(data.eleves || []);
+      })
+      .catch(err => console.error("Erreur récupération des listes :", err));
+  }, []);
 
+  // Gérer les changements des champs et mettre à jour l'état dans le parent
   const handleChange = (e) => {
     const { name, value } = e.target;
-    onChange(id, { ...data, [name]: name === "note" ? parseFloat(value) || 0 : value });
+    const updatedData = { ...data, [name]: value };  // Met à jour la valeur du champ dans les données locales
+    onChange(id, updatedData);  // Envoie les nouvelles données au parent pour mise à jour de l'état
   };
 
   return (
@@ -199,13 +254,13 @@ function Note({ id, data, onChange, Supprimer }) {
           list="matiere"
           type="text"
           name="nom_matiere"
-          value={data.nom_matiere}
+          value={data.nom_matiere || ''}  // Assurez-vous que la valeur est bien une chaîne vide si undefined
           onChange={handleChange}
-          disabled={!modification}
         />
         <datalist id="matiere">
-          <option value="Maths" />
-          <option value="Physique" />
+          {matieres.map((matiere, index) => (
+            <option key={index} value={matiere} />
+          ))}
         </datalist>
       </td>
       <td className="p-3 px-5">
@@ -213,30 +268,26 @@ function Note({ id, data, onChange, Supprimer }) {
           list="eleve"
           type="text"
           name="nom_eleve"
-          value={data.nom_eleve}
+          value={`${data.nom_eleve || ''}`}  // Valeur par défaut vide
           onChange={handleChange}
-          disabled={!modification}
         />
         <datalist id="eleve">
-          <option value="GARNIER Mathis" />
-          <option value="BENOIS Elian" />
+          {eleves.map((eleve, index) => (
+            <option key={index} value={eleve} />
+          ))}
         </datalist>
       </td>
       <td className="p-3 px-5">
         <input
           type="number"
           name="note"
-          value={data.note}
+          value={data.note || ''}  // Assurez-vous que la valeur est bien une chaîne vide si undefined
           onChange={handleChange}
-          disabled={!modification}
           min="0"
           max="20"
         />
       </td>
       <td className="p-3 px-5 flex justify-end">
-        <button className="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded" type="button" onClick={toggleModification}>
-          {modification ? 'Enregistrer' : 'Modifier'}
-        </button>
         <button className="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded" type="button" onClick={() => Supprimer(id)}>Supprimer</button>
       </td>
     </>
