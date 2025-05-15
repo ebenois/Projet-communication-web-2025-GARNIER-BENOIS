@@ -16,7 +16,6 @@ function Connexion() {
     try {
       const response = await fetch(`https://ebenois.zzz.bordeaux-inp.fr/APItraitementnote.php?identifiant=${encodeURIComponent(identifiant)}&motDePasse=${encodeURIComponent(motDePasse)}`);
       const dataRaw = await response.json();
-      console.log(dataRaw);
     
       const { notes, job } = dataRaw;
     
@@ -45,9 +44,6 @@ function Connexion() {
   }    
 
   if (estConnecte) {
-    
-    console.log(estProf)
-
     return (
       <div className="text-gray-900 bg-gray-200">
         <div className="p-4 flex">
@@ -134,12 +130,13 @@ function Recapitulatif({ notesInitiales }) {
       utilisateur_id: profId,
     };
     setRecap([...recap, nouvelleNote]);
-    console.log(nouvelleNote)
   };
 
   const SupprimerNote = async (idASupprimer) => {
-      setRecap(recap.filter((note) => note.id !== idASupprimer));
-  }
+    const notesRestantes = recap.filter((note) => note.id !== idASupprimer);
+    setRecap(notesRestantes);
+};
+
   
   const mettreAJourNote = (id, nouvelleValeur) => {
     setRecap(recap.map(p => (p.id === id ? nouvelleValeur : p)));  // Mise à jour de l'état des notes
@@ -152,7 +149,6 @@ function Recapitulatif({ notesInitiales }) {
       note: note.note,
       utilisateur_id: note.utilisateur_id
     }));
-  
     const profId = recap[0]?.utilisateur_id;
     
     try {
