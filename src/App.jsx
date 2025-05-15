@@ -9,6 +9,7 @@ function Connexion() {
   const [moyenne, setMoyenne] = useState(0);
   const [estConnecte, setEstConnecte] = useState(false);
   const [estProf, setEstProf] = useState(true);
+  const [profId, setProfId] = useState(null);
 
   const handleConnexion = async (e) => {
     e.preventDefault();
@@ -19,7 +20,7 @@ function Connexion() {
     
       const { notes, job } = dataRaw;
     
-      if (notes && notes.length > 0) {
+      if (job && job.length > 0) {
         const data = notes.map(({ utilisateur_nom, utilisateur_prenom, ...rest }) => ({
           ...rest,
           nom_eleve: `${utilisateur_nom || ''} ${utilisateur_prenom || ''}`.trim()
@@ -29,11 +30,18 @@ function Connexion() {
         setMessage('');
         setEstConnecte(true);
 
-        if (job && job.length > 0 && job[0].job === 'eleve') {
-          setEstProf(false)
-          const total = data.reduce((acc, curr) => acc + parseFloat(curr.note), 0);
-          setMoyenne((total / data.length).toFixed(2));
-        }
+      
+          const userJob = job[0].job;
+          const userId = job[0].id;
+        
+          if (userJob === 'eleve') {
+            setEstProf(false);
+            const total = data.reduce((acc, curr) => acc + parseFloat(curr.note), 0);
+            setMoyenne((total / data.length).toFixed(2));
+          } else if (userJob === 'prof') {
+            setProfId(userId);  // 💡 ENREGISTREMENT DE L'ID DU PROF
+          }
+        
       } else {
         setMessage("Identifiant ou mot de passe incorrect.");
       }
@@ -70,7 +78,7 @@ function Connexion() {
               </tbody>
             </table>
           )}
-          {estProf && <Recapitulatif notesInitiales={resultats} />}
+          {estProf && <Recapitulatif notesInitiales={resultats} profId={profId} />}
         </div>
       </div>
     );
@@ -108,10 +116,9 @@ function Connexion() {
   );
 }
 
-function Recapitulatif({ notesInitiales }) {
+function Recapitulatif({ notesInitiales, profId }) {
   const [recap, setRecap] = useState([]);
   const nextId = useRef(0);
-  const profId = notesInitiales[0]?.utilisateur_id || 0;
 
   useEffect(() => {
     const notesAvecIds = notesInitiales.map(note => ({
@@ -123,12 +130,12 @@ function Recapitulatif({ notesInitiales }) {
 
   const ajouterNote = () => {
     const nouvelleNote = {
-      id: `${profId}${nextId.current++}`,  // Convertir profId en chaîne
+      id: `${profId}${nextId.current++}`,
       nom_matiere: '',
       nom_eleve: '',
       note: 0,
       utilisateur_id: profId,
-    };
+    };    
     setRecap([...recap, nouvelleNote]);
   };
 
@@ -137,7 +144,6 @@ function Recapitulatif({ notesInitiales }) {
     setRecap(notesRestantes);
 };
 
-  
   const mettreAJourNote = (id, nouvelleValeur) => {
     setRecap(recap.map(p => (p.id === id ? nouvelleValeur : p)));  // Mise à jour de l'état des notes
   };
