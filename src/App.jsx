@@ -24,6 +24,7 @@ function Connexion() {
         setResultats(data);
         setMessage('');
         setEstConnecte(true);
+        console.log(data)
 
         const notes = data.filter(d => d.job === "eleve");
         const total = notes.reduce((acc, curr) => acc + parseFloat(curr.note), 0);
@@ -123,66 +124,51 @@ function Recapitulatif({ notesInitiales }) {
       nom_eleve: '',
       note: 0,
       utilisateur_id: profId,
-      estValide: true,
     };
     setRecap([...recap, nouvelleNote]);
     console.log(nouvelleNote)
   };
 
   const SupprimerNote = async (idASupprimer) => {
-    console.log("Suppression de l'ID :", idASupprimer);
-    try {
-      // Supprimer localement
       setRecap(recap.filter((note) => note.id !== idASupprimer));
+  }
   
-      // Ne pas appeler l’API pour des notes locales (non encore enregistrées)
-      if (isNaN(idASupprimer)) {
-        return; // Note non enregistrée en base, donc rien à supprimer côté serveur
-      }
-  
-      const response = await fetch('https://ebenois.zzz.bordeaux-inp.fr/APIenregistrementnote.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ supprimer_notes: [parseInt(idASupprimer)] })
-      });
-  
-      const result = await response.json();
-      if (result.error) {
-        alert('Erreur lors de la suppression de la note.');
-      } else {
-        alert('Note supprimée avec succès!');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la suppression de la note:', error);
-      alert('Erreur lors de la suppression de la note.');
-    }
-  };  
-
   const mettreAJourNote = (id, nouvelleValeur) => {
     setRecap(recap.map(p => (p.id === id ? nouvelleValeur : p)));  // Mise à jour de l'état des notes
   };
 
   const soumission = async () => {
     const notesFormatees = recap.map(note => ({
-      id: note.id,
       nom_matiere: note.nom_matiere,
       nom_eleve: note.nom_eleve,
       note: note.note,
       utilisateur_id: note.utilisateur_id
     }));
+  
+    const profId = recap[0]?.utilisateur_id;
     
-    const data = { notes: notesFormatees };
-
     try {
-      console.log(data);
+      // 1. Supprimer toutes les notes existantes du professeur
+      const suppression = await fetch('https://ebenois.zzz.bordeaux-inp.fr/APIenregistrementnote.php', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ supprimer_toutes_notes_prof: profId }),
+      });
+  
+      const supprResult = await suppression.text();
+      console.log('Résultat de la suppression :', supprResult);
+  
+      // 2. Insérer les nouvelles notes
       const reponse = await fetch('https://ebenois.zzz.bordeaux-inp.fr/APIenregistrementnote.php', {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ notes: notesFormatees }),
       });
-
+  
       const result = await reponse.text();
       console.log('Réponse du serveur :', result);
       alert('Notes envoyées avec succès !');
@@ -190,7 +176,7 @@ function Recapitulatif({ notesInitiales }) {
       console.error('Erreur lors de l\'envoi des données :', erreur);
       alert('Erreur lors de l\'envoi des données');
     }
-  };
+  };  
 
   return (
     <>
@@ -219,7 +205,7 @@ function Recapitulatif({ notesInitiales }) {
         <button className={`mr-3 text-sm bg-green-600 hover:bg-green-800 text-white py-1 px-2 rounded`}
           type="button"
           onClick={soumission}
-        >Envoyer</button>
+        >Envoyer les modifications</button>
       </div>
     </>
   );
@@ -243,8 +229,30 @@ function Note({ id, data, onChange, Supprimer }) {
   // Gérer les changements des champs et mettre à jour l'état dans le parent
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const updatedData = { ...data, [name]: value };  // Met à jour la valeur du champ dans les données locales
+    const updatedData = { ...data, [name]: value };
+
+    // Validation pour la note
+    if (name === 'note') {
+      // Assurer que la note est entre 0 et 20
+      if (value < 0 || value > 20) return;
+    }
+
     onChange(id, updatedData);  // Envoie les nouvelles données au parent pour mise à jour de l'état
+  };
+
+  // Gérer l'événement où l'utilisateur essaie d'écrire dans un champ ayant une datalist
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    // Si la valeur ne correspond à aucune option dans la datalist, réinitialiser la valeur
+    const options = name === 'nom_matiere' ? matieres : eleves;
+    if (!options.includes(value)) {
+      e.target.setCustomValidity("Veuillez choisir une option dans la liste.");
+    } else {
+      e.target.setCustomValidity("");
+    }
+
+    handleChange(e);
   };
 
   return (
@@ -255,7 +263,8 @@ function Note({ id, data, onChange, Supprimer }) {
           type="text"
           name="nom_matiere"
           value={data.nom_matiere || ''}  // Assurez-vous que la valeur est bien une chaîne vide si undefined
-          onChange={handleChange}
+          onChange={handleInputChange}
+          required
         />
         <datalist id="matiere">
           {matieres.map((matiere, index) => (
@@ -268,8 +277,9 @@ function Note({ id, data, onChange, Supprimer }) {
           list="eleve"
           type="text"
           name="nom_eleve"
-          value={`${data.nom_eleve || ''}`}  // Valeur par défaut vide
-          onChange={handleChange}
+          value={data.nom_eleve || ''}  // Valeur par défaut vide
+          onChange={handleInputChange}
+          required
         />
         <datalist id="eleve">
           {eleves.map((eleve, index) => (
@@ -285,14 +295,16 @@ function Note({ id, data, onChange, Supprimer }) {
           onChange={handleChange}
           min="0"
           max="20"
+          required
         />
       </td>
       <td className="p-3 px-5 flex justify-end">
-        <button className="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded" type="button" onClick={() => Supprimer(id)}>Supprimer</button>
+        <button className="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded" type="button" onClick={() => Supprimer(id)}>Supprimer la note</button>
       </td>
     </>
   );
 }
+
 
 function App() {
   return <Connexion />;
