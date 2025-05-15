@@ -8,6 +8,7 @@ function Connexion() {
   const [resultats, setResultats] = useState([]);
   const [moyenne, setMoyenne] = useState(0);
   const [estConnecte, setEstConnecte] = useState(false);
+  const [estProf, setEstProf] = useState(true);
 
   const handleConnexion = async (e) => {
     e.preventDefault();
@@ -15,30 +16,37 @@ function Connexion() {
     try {
       const response = await fetch(`https://ebenois.zzz.bordeaux-inp.fr/APItraitementnote.php?identifiant=${encodeURIComponent(identifiant)}&motDePasse=${encodeURIComponent(motDePasse)}`);
       const dataRaw = await response.json();
-
-      if (dataRaw.length > 0) {
-        const data = dataRaw.map(({ utilisateur_nom, utilisateur_prenom, ...rest }) => ({
+      console.log(dataRaw);
+    
+      const { notes, job } = dataRaw;
+    
+      if (notes && notes.length > 0) {
+        const data = notes.map(({ utilisateur_nom, utilisateur_prenom, ...rest }) => ({
           ...rest,
           nom_eleve: `${utilisateur_nom || ''} ${utilisateur_prenom || ''}`.trim()
         }));
+    
         setResultats(data);
         setMessage('');
         setEstConnecte(true);
-        console.log(data)
 
-        const notes = data.filter(d => d.job === "eleve");
-        const total = notes.reduce((acc, curr) => acc + parseFloat(curr.note), 0);
-        setMoyenne((total / notes.length).toFixed(2));
+        if (job && job.length > 0 && job[0].job === 'eleve') {
+          setEstProf(false)
+          const total = data.reduce((acc, curr) => acc + parseFloat(curr.note), 0);
+          setMoyenne((total / data.length).toFixed(2));
+        }
       } else {
         setMessage("Identifiant ou mot de passe incorrect.");
       }
     } catch (error) {
+      console.error(error);
       setMessage("Erreur lors de la connexion.");
     }
-  };
+  }    
 
   if (estConnecte) {
-    const estProf = resultats.some(r => r.job === "prof");
+    
+    console.log(estProf)
 
     return (
       <div className="text-gray-900 bg-gray-200">
@@ -66,7 +74,7 @@ function Connexion() {
               </tbody>
             </table>
           )}
-          {estProf && <Recapitulatif notesInitiales={resultats.filter(r => r.job === "prof")} />}
+          {estProf && <Recapitulatif notesInitiales={resultats} />}
         </div>
       </div>
     );
